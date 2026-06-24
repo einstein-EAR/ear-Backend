@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ContactForm {
+  id        String   @id @default(uuid()) @map("_id") @db.Uuid
+  name      String
+  email     String
+  phone     String
+  subject   String
+  country   String
+  message   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("contact_forms")
+}
+
+model PaperSubmission {
+  id           String   @id @default(uuid()) @map("_id") @db.Uuid
+  name         String
+  emailId      String   @map("email_id")
+  titleOfPaper String   @map("title_of_paper")
+  country      String
+  mobile       String
+  message      String
+  paperFileUrl String   @map("paper_file_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("paper_submissions")
+}
+
