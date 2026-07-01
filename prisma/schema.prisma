@@ -43,3 +43,39 @@ model PaperSubmission {
   @@map("paper_submissions")
 }
 
+model Journal {
+  id           String         @id @default(uuid()) @map("_id") @db.Uuid
+  title        String
+  description  String
+  serialNumber String         @map("serial_number")
+  imageUrl     String         @map("image_url")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  issues       JournalIssue[]
+
+  @@map("journals")
+}
+
+model JournalIssue {
+  id         String     @id @default(uuid()) @map("_id") @db.Uuid
+  journalId  String     @map("journal_id") @db.Uuid
+  issueLabel String     @map("issue_label")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+  journal    Journal    @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  pdfs       IssuePdf[]
+
+  @@map("journal_issues")
+}
+
+model IssuePdf {
+  id        String       @id @default(uuid()) @map("_id") @db.Uuid
+  issueId   String       @map("issue_id") @db.Uuid
+  title     String
+  pdfUrl    String       @map("pdf_url")
+  createdAt DateTime     @default(now()) @map("created_at")
+  issue     JournalIssue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@map("issue_pdfs")
+}
+

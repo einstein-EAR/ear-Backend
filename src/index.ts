@@ -2,7 +2,14 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
-import { userRoute, contactFormRoute, authRoute, paperSubmissionRoute } from './routes';
+import {
+  userRoute,
+  contactFormRoute,
+  authRoute,
+  paperSubmissionRoute,
+  journalRoute,
+  issueRoute,
+} from './routes';
 import { notFound, errorHandler } from './middlewares/errorHandler';
 
 dotenv.config();
@@ -22,6 +29,8 @@ app.use('/auth', authRoute);
 app.use('/users', userRoute);
 app.use('/contact-forms', contactFormRoute);
 app.use('/paper-submissions', paperSubmissionRoute);
+app.use('/journals', journalRoute);
+app.use('/issues', issueRoute);
 
 app.use(notFound);
 app.use(errorHandler);

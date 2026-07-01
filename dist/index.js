@@ -22,6 +22,8 @@ app.use('/auth', routes_1.authRoute);
 app.use('/users', routes_1.userRoute);
 app.use('/contact-forms', routes_1.contactFormRoute);
 app.use('/paper-submissions', routes_1.paperSubmissionRoute);
+app.use('/journals', routes_1.journalRoute);
+app.use('/issues', routes_1.issueRoute);
 app.use(errorHandler_1.notFound);
 app.use(errorHandler_1.errorHandler);
 app.listen(PORT, () => {

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import pool from '../components/db';
 import AppError from '../utils/AppError';
-import { uploadPaperToS3 } from '../services/upload.service';
+import { uploadPaperToS3, getPresignedPaperUrl } from '../services/upload.service';
 
 const REQUIRED_FIELDS = ['name', 'emailId', 'titleOfPaper', 'country', 'mobile', 'message'] as const;
 
@@ -27,7 +27,7 @@ type PaperSubmissionRow = {
   updated_at: Date;
 };
 
-const formatPaperSubmission = (row: PaperSubmissionRow) => ({
+const formatPaperSubmission = async (row: PaperSubmissionRow) => ({
   _id: row._id,
   name: row.name,
   emailId: row.email_id,
@@ -35,7 +35,7 @@ const formatPaperSubmission = (row: PaperSubmissionRow) => ({
   country: row.country,
   mobile: row.mobile,
   message: row.message,
-  paperFileUrl: row.paper_file_url,
+  paperFileUrl: await getPresignedPaperUrl(row.paper_file_url),
   created_at: row.created_at,
   updated_at: row.updated_at,
 });
@@ -63,7 +63,7 @@ export const createPaperSubmission = async (req: Request, res: Response) => {
   }
 
   const data = validatePaperSubmission(req.body);
-  const paperFileUrl = await uploadPaperToS3(req.file);
+  const paperFileKey = await uploadPaperToS3(req.file);
 
   const result = await pool.query(
     `INSERT INTO paper_submissions
@@ -77,11 +77,11 @@ export const createPaperSubmission = async (req: Request, res: Response) => {
       data.country,
       data.mobile,
       data.message,
-      paperFileUrl,
+      paperFileKey,
     ]
   );
 
-  res.status(201).json(formatPaperSubmission(result.rows[0]));
+  res.status(201).json(await formatPaperSubmission(result.rows[0]));
 };
 
 export const getAllPaperSubmissions = async (_req: Request, res: Response) => {
@@ -89,7 +89,8 @@ export const getAllPaperSubmissions = async (_req: Request, res: Response) => {
     'SELECT * FROM paper_submissions ORDER BY created_at DESC'
   );
 
-  res.json(result.rows.map(formatPaperSubmission));
+  const submissions = await Promise.all(result.rows.map(formatPaperSubmission));
+  res.json(submissions);
 };
 
 export const getPaperSubmissionById = async (req: Request, res: Response) => {
@@ -102,7 +103,7 @@ export const getPaperSubmissionById = async (req: Request, res: Response) => {
     throw new AppError('Paper submission not found', 404);
   }
 
-  res.json(formatPaperSubmission(result.rows[0]));
+  res.json(await formatPaperSubmission(result.rows[0]));
 };
 
 export const updatePaperSubmission = async (req: Request, res: Response) => {
@@ -117,10 +118,10 @@ export const updatePaperSubmission = async (req: Request, res: Response) => {
     throw new AppError('Paper submission not found', 404);
   }
 
-  let paperFileUrl = existing.rows[0].paper_file_url;
+  let paperFileKey = existing.rows[0].paper_file_url;
 
   if (req.file) {
-    paperFileUrl = await uploadPaperToS3(req.file);
+    paperFileKey = await uploadPaperToS3(req.file);
   }
 
   const result = await pool.query(
@@ -136,12 +137,12 @@ export const updatePaperSubmission = async (req: Request, res: Response) => {
       data.country,
       data.mobile,
       data.message,
-      paperFileUrl,
+      paperFileKey,
       req.params.id,
     ]
   );
 
-  res.json(formatPaperSubmission(result.rows[0]));
+  res.json(await formatPaperSubmission(result.rows[0]));
 };
 
 export const deletePaperSubmission = async (req: Request, res: Response) => {
