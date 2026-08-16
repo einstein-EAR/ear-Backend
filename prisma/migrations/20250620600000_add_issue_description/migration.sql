@@ -1,0 +1,1 @@
+ALTER TABLE journal_issues ADD COLUMN IF NOT EXISTS description TEXT NOT NULL DEFAULT '';

@@ -12,10 +12,13 @@ const router = express_1.default.Router();
 // Public routes (no JWT)
 router.get('/', (0, catchAsync_1.catchAsync)(issue_controller_1.getAllIssues));
 router.get('/journal/:journalId', (0, catchAsync_1.catchAsync)(issue_controller_1.getIssuesByJournal));
+router.get('/pdfs/search', (0, catchAsync_1.catchAsync)(issue_controller_1.searchPdfs));
 router.get('/:id', (0, catchAsync_1.catchAsync)(issue_controller_1.getIssueById));
 // Admin routes
 router.post('/', (0, catchAsync_1.catchAsync)(authMiddleware_1.protect), (0, catchAsync_1.catchAsync)((0, authMiddleware_1.authorize)('admin')), (0, catchAsync_1.catchAsync)(issue_controller_1.createIssue));
 router.put('/:id', (0, catchAsync_1.catchAsync)(authMiddleware_1.protect), (0, catchAsync_1.catchAsync)((0, authMiddleware_1.authorize)('admin')), (0, catchAsync_1.catchAsync)(issue_controller_1.updateIssue));
 router.post('/:id/pdfs', (0, catchAsync_1.catchAsync)(authMiddleware_1.protect), (0, catchAsync_1.catchAsync)((0, authMiddleware_1.authorize)('admin')), uploadMiddleware_1.uploadIssuePdfs.array('pdfs', 20), (0, catchAsync_1.catchAsync)(issue_controller_1.uploadIssuePdfs));
+router.put('/pdfs/:pdfId', (0, catchAsync_1.catchAsync)(authMiddleware_1.protect), (0, catchAsync_1.catchAsync)((0, authMiddleware_1.authorize)('admin')), uploadMiddleware_1.uploadIssuePdfs.single('pdf'), (0, catchAsync_1.catchAsync)(issue_controller_1.updateIssuePdf));
+router.delete('/pdfs/:pdfId', (0, catchAsync_1.catchAsync)(authMiddleware_1.protect), (0, catchAsync_1.catchAsync)((0, authMiddleware_1.authorize)('admin')), (0, catchAsync_1.catchAsync)(issue_controller_1.deleteIssuePdf));
 router.delete('/:id', (0, catchAsync_1.catchAsync)(authMiddleware_1.protect), (0, catchAsync_1.catchAsync)((0, authMiddleware_1.authorize)('admin')), (0, catchAsync_1.catchAsync)(issue_controller_1.deleteIssue));
 exports.default = router;

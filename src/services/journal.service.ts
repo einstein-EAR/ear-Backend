@@ -16,6 +16,7 @@ type IssueRow = {
   _id: string;
   journal_id: string;
   issue_label: string;
+  description: string;
   created_at: Date;
   updated_at: Date;
 };
@@ -24,13 +25,17 @@ type PdfRow = {
   _id: string;
   issue_id: string;
   title: string;
+  author: string;
+  doi: string;
   pdf_url: string;
   created_at: Date;
 };
 
-const formatPdf = async (pdf: PdfRow) => ({
+export const formatPdf = async (pdf: PdfRow) => ({
   _id: pdf._id,
   title: pdf.title,
+  author: pdf.author,
+  doi: pdf.doi,
   pdfUrl: await getPresignedUrl(pdf.pdf_url),
   created_at: pdf.created_at,
 });
@@ -44,7 +49,7 @@ export const formatIssue = async (
   journalId: issue.journal_id,
   issueLabel: issue.issue_label,
   title: journal.title,
-  description: journal.description,
+  description: issue.description,
   pdfs: await Promise.all(
     pdfs.filter((pdf) => pdf.issue_id === issue._id).map(formatPdf)
   ),
@@ -84,8 +89,7 @@ export const fetchIssuesWithDetails = async (filter?: {
   issueId?: string;
 }) => {
   let issueQuery = `
-    SELECT ji.*, j.title, j.description, j.serial_number, j.image_url,
-           j.created_at AS journal_created_at, j.updated_at AS journal_updated_at
+    SELECT ji.*, j.title AS journal_title
     FROM journal_issues ji
     JOIN journals j ON j._id = ji.journal_id
   `;
@@ -112,18 +116,19 @@ export const fetchIssuesWithDetails = async (filter?: {
     _id: row._id,
     journal_id: row.journal_id,
     issue_label: row.issue_label,
+    description: row.description,
     created_at: row.created_at,
     updated_at: row.updated_at,
   }));
 
   const journals: JournalRow[] = rows.map((row) => ({
     _id: row.journal_id,
-    title: row.title,
-    description: row.description,
-    serial_number: row.serial_number,
-    image_url: row.image_url,
-    created_at: row.journal_created_at,
-    updated_at: row.journal_updated_at,
+    title: row.journal_title,
+    description: '',
+    serial_number: '',
+    image_url: '',
+    created_at: row.created_at,
+    updated_at: row.updated_at,
   }));
 
   const issueIds = issues.map((issue) => issue._id);
@@ -134,7 +139,49 @@ export const fetchIssuesWithDetails = async (filter?: {
   const pdfs: PdfRow[] = pdfsResult.rows;
 
   return Promise.all(
-    issues.map((issue, index) => formatIssue(issue, journals[index], pdfs))
+    issues.map((issue, index) => formatIssue(issue, journals[index]!, pdfs))
+  );
+};
+
+export const fetchPdfById = async (pdfId: string) => {
+  const result = await pool.query('SELECT * FROM issue_pdfs WHERE _id = $1', [pdfId]);
+
+  if (result.rows.length === 0) {
+    throw new AppError('PDF not found', 404);
+  }
+
+  return formatPdf(result.rows[0]);
+};
+
+export const searchPdfs = async (query?: string) => {
+  const search = query?.trim();
+
+  if (!search) {
+    throw new AppError('query is required', 400);
+  }
+
+  const result = await pool.query(
+    `SELECT p.*, ji.issue_label, ji.journal_id, j.title AS journal_title
+     FROM issue_pdfs p
+     JOIN journal_issues ji ON ji._id = p.issue_id
+     JOIN journals j ON j._id = ji.journal_id
+     WHERE p.title ILIKE $1 OR p.author ILIKE $1
+     ORDER BY p.created_at DESC`,
+    [`%${search}%`]
+  );
+
+  return Promise.all(
+    (result.rows as (PdfRow & {
+      issue_label: string;
+      journal_id: string;
+      journal_title: string;
+    })[]).map(async (pdf) => ({
+      ...(await formatPdf(pdf)),
+      issueId: pdf.issue_id,
+      issueLabel: pdf.issue_label,
+      journalId: pdf.journal_id,
+      journalTitle: pdf.journal_title,
+    }))
   );
 };
 
@@ -156,16 +203,32 @@ export const ensureIssueExists = async (issueId: string) => {
   return result.rows[0];
 };
 
-export const saveIssuePdfs = async (issueId: string, files: Express.Multer.File[]) => {
+export const ensurePdfExists = async (pdfId: string) => {
+  const result = await pool.query('SELECT * FROM issue_pdfs WHERE _id = $1', [pdfId]);
+
+  if (result.rows.length === 0) {
+    throw new AppError('PDF not found', 404);
+  }
+
+  return result.rows[0] as PdfRow;
+};
+
+export const saveIssuePdfs = async (
+  issueId: string,
+  files: Express.Multer.File[],
+  meta: { title?: string; author: string; doi: string }
+) => {
   const savedPdfs = [];
 
   for (const file of files) {
     const pdfKey = await uploadIssuePdfToS3(file);
+    const title = meta.title?.trim() || file.originalname;
+
     const result = await pool.query(
-      `INSERT INTO issue_pdfs (issue_id, title, pdf_url)
-       VALUES ($1, $2, $3)
+      `INSERT INTO issue_pdfs (issue_id, title, author, doi, pdf_url)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [issueId, file.originalname, pdfKey]
+      [issueId, title, meta.author, meta.doi, pdfKey]
     );
     savedPdfs.push(result.rows[0]);
   }
