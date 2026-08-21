@@ -3,12 +3,19 @@ const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
+const host = process.env.DB_HOST || '';
+const useSsl =
+  process.env.DB_SSL === 'true' ||
+  host.includes('neon.tech') ||
+  (host !== '' && host !== 'localhost' && host !== '127.0.0.1');
+
 const pool = new Pool({
-  host: process.env.DB_HOST,
+  host,
   port: Number(process.env.DB_PORT),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  ssl: useSsl ? { rejectUnauthorized: false } : undefined,
 });
 
 const migrationsDir = path.join(__dirname, '../prisma/migrations');

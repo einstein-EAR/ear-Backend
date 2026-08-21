@@ -100,28 +100,17 @@ const fetchPdfById = async (pdfId) => {
     return (0, exports.formatPdf)(result.rows[0]);
 };
 exports.fetchPdfById = fetchPdfById;
-const searchPdfs = async (filters) => {
-    const title = filters.title?.trim();
-    const author = filters.author?.trim();
-    if (!title && !author) {
-        throw new AppError_1.default('At least one of title or author is required', 400);
-    }
-    const conditions = [];
-    const params = [];
-    if (title) {
-        params.push(`%${title}%`);
-        conditions.push(`p.title ILIKE $${params.length}`);
-    }
-    if (author) {
-        params.push(`%${author}%`);
-        conditions.push(`p.author ILIKE $${params.length}`);
+const searchPdfs = async (query) => {
+    const search = query?.trim();
+    if (!search) {
+        throw new AppError_1.default('query is required', 400);
     }
     const result = await db_1.default.query(`SELECT p.*, ji.issue_label, ji.journal_id, j.title AS journal_title
      FROM issue_pdfs p
      JOIN journal_issues ji ON ji._id = p.issue_id
      JOIN journals j ON j._id = ji.journal_id
-     WHERE ${conditions.join(' AND ')}
-     ORDER BY p.created_at DESC`, params);
+     WHERE p.title ILIKE $1 OR p.author ILIKE $1
+     ORDER BY p.created_at DESC`, [`%${search}%`]);
     return Promise.all(result.rows.map(async (pdf) => ({
         ...(await (0, exports.formatPdf)(pdf)),
         issueId: pdf.issue_id,

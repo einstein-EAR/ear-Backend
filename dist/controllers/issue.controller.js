@@ -24,9 +24,8 @@ const getAllIssues = async (_req, res) => {
 };
 exports.getAllIssues = getAllIssues;
 const searchPdfs = async (req, res) => {
-    const title = typeof req.query.title === 'string' ? req.query.title : undefined;
-    const author = typeof req.query.author === 'string' ? req.query.author : undefined;
-    const pdfs = await (0, journal_service_1.searchPdfs)({ title, author });
+    const query = typeof req.query.query === 'string' ? req.query.query : undefined;
+    const pdfs = await (0, journal_service_1.searchPdfs)(query);
     res.json(pdfs);
 };
 exports.searchPdfs = searchPdfs;
