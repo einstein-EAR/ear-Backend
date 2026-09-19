@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.issueRoute = exports.journalRoute = exports.paperSubmissionRoute = exports.authRoute = exports.contactFormRoute = exports.userRoute = void 0;
+exports.siteSettingsRoute = exports.issueRoute = exports.journalRoute = exports.paperSubmissionRoute = exports.authRoute = exports.contactFormRoute = exports.userRoute = void 0;
 var userRoutes_1 = require("./userRoutes");
 Object.defineProperty(exports, "userRoute", { enumerable: true, get: function () { return __importDefault(userRoutes_1).default; } });
 var contactFormRoutes_1 = require("./contactFormRoutes");
@@ -16,3 +16,5 @@ var journalRoutes_1 = require("./journalRoutes");
 Object.defineProperty(exports, "journalRoute", { enumerable: true, get: function () { return __importDefault(journalRoutes_1).default; } });
 var issueRoutes_1 = require("./issueRoutes");
 Object.defineProperty(exports, "issueRoute", { enumerable: true, get: function () { return __importDefault(issueRoutes_1).default; } });
+var siteSettingsRoutes_1 = require("./siteSettingsRoutes");
+Object.defineProperty(exports, "siteSettingsRoute", { enumerable: true, get: function () { return __importDefault(siteSettingsRoutes_1).default; } });

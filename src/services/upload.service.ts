@@ -22,6 +22,13 @@ const IMAGE_MIME_TYPES = new Set([
   'image/gif',
 ]);
 
+const SITE_IMAGE_MIME_TYPES = new Set([
+  ...IMAGE_MIME_TYPES,
+  'image/svg+xml',
+  'image/x-icon',
+  'image/vnd.microsoft.icon',
+]);
+
 export const extractS3Key = (stored: string): string => {
   if (stored.startsWith('http')) {
     const url = new URL(stored);
@@ -84,3 +91,6 @@ export const uploadJournalImageToS3 = (file: Express.Multer.File) =>
 
 export const uploadIssuePdfToS3 = (file: Express.Multer.File) =>
   uploadToS3(file, 'journals/issue-pdfs', PDF_MIME_TYPES, MAX_PDF_SIZE, 'PDF');
+
+export const uploadSiteImageToS3 = (file: Express.Multer.File, folder: string) =>
+  uploadToS3(file, folder, SITE_IMAGE_MIME_TYPES, MAX_IMAGE_SIZE, 'Image');

@@ -21,6 +21,13 @@ const PDF_MIME_TYPES = [
 
 const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
+const SITE_IMAGE_MIME_TYPES = [
+  ...IMAGE_MIME_TYPES,
+  'image/svg+xml',
+  'image/x-icon',
+  'image/vnd.microsoft.icon',
+];
+
 export const uploadPaper = multer({
   storage,
   fileFilter: createFileFilter(PDF_MIME_TYPES, 'Only PDF and DOC/DOCX files are allowed'),
@@ -37,4 +44,13 @@ export const uploadIssuePdfs = multer({
   storage,
   fileFilter: createFileFilter(PDF_MIME_TYPES, 'Only PDF and DOC/DOCX files are allowed'),
   limits: { fileSize: 10 * 1024 * 1024 },
+});
+
+export const uploadSiteSettingsImages = multer({
+  storage,
+  fileFilter: createFileFilter(
+    SITE_IMAGE_MIME_TYPES,
+    'Only JPEG, PNG, WEBP, GIF, SVG and ICO images are allowed'
+  ),
+  limits: { fileSize: 5 * 1024 * 1024 },
 });

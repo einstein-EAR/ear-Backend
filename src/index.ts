@@ -9,6 +9,7 @@ import {
   paperSubmissionRoute,
   journalRoute,
   issueRoute,
+  siteSettingsRoute,
 } from './routes';
 import { notFound, errorHandler } from './middlewares/errorHandler';
 
@@ -31,6 +32,7 @@ app.use('/contact-forms', contactFormRoute);
 app.use('/paper-submissions', paperSubmissionRoute);
 app.use('/journals', journalRoute);
 app.use('/issues', issueRoute);
+app.use('/site-settings', siteSettingsRoute);
 
 app.use(notFound);
 app.use(errorHandler);

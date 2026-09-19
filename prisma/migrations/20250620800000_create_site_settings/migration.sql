@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS site_settings (
+  _id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title VARCHAR(500) NOT NULL DEFAULT '',
+  subtitle VARCHAR(1000) NOT NULL DEFAULT '',
+  phone VARCHAR(50) NOT NULL DEFAULT '',
+  email VARCHAR(255) NOT NULL DEFAULT '',
+  issn VARCHAR(100) NOT NULL DEFAULT '',
+  fav_icon TEXT NOT NULL DEFAULT '',
+  icon_image TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);

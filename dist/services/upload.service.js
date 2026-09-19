@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadIssuePdfToS3 = exports.uploadJournalImageToS3 = exports.uploadPaperToS3 = exports.getPresignedPaperUrl = exports.getPresignedUrl = exports.extractS3Key = void 0;
+exports.uploadSiteImageToS3 = exports.uploadIssuePdfToS3 = exports.uploadJournalImageToS3 = exports.uploadPaperToS3 = exports.getPresignedPaperUrl = exports.getPresignedUrl = exports.extractS3Key = void 0;
 const client_s3_1 = require("@aws-sdk/client-s3");
 const s3_request_presigner_1 = require("@aws-sdk/s3-request-presigner");
 const crypto_1 = require("crypto");
@@ -23,6 +23,12 @@ const IMAGE_MIME_TYPES = new Set([
     'image/png',
     'image/webp',
     'image/gif',
+]);
+const SITE_IMAGE_MIME_TYPES = new Set([
+    ...IMAGE_MIME_TYPES,
+    'image/svg+xml',
+    'image/x-icon',
+    'image/vnd.microsoft.icon',
 ]);
 const extractS3Key = (stored) => {
     if (stored.startsWith('http')) {
@@ -68,3 +74,5 @@ const uploadJournalImageToS3 = (file) => uploadToS3(file, 'journals/images', IMA
 exports.uploadJournalImageToS3 = uploadJournalImageToS3;
 const uploadIssuePdfToS3 = (file) => uploadToS3(file, 'journals/issue-pdfs', PDF_MIME_TYPES, MAX_PDF_SIZE, 'PDF');
 exports.uploadIssuePdfToS3 = uploadIssuePdfToS3;
+const uploadSiteImageToS3 = (file, folder) => uploadToS3(file, folder, SITE_IMAGE_MIME_TYPES, MAX_IMAGE_SIZE, 'Image');
+exports.uploadSiteImageToS3 = uploadSiteImageToS3;

@@ -82,3 +82,18 @@ model IssuePdf {
   @@map("issue_pdfs")
 }
 
+model SiteSettings {
+  id        String   @id @default(uuid()) @map("_id") @db.Uuid
+  title     String   @default("")
+  subtitle  String   @default("")
+  phone     String   @default("")
+  email     String   @default("")
+  issn      String   @default("")
+  favIcon   String   @default("") @map("fav_icon")
+  iconImage String   @default("") @map("icon_image")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("site_settings")
+}
+
