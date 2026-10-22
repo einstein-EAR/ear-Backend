@@ -50,10 +50,10 @@ const updateSiteSettings = async (req, res) => {
     const favIconFile = files?.favIcon?.[0];
     const iconImageFile = files?.iconImage?.[0];
     if (favIconFile) {
-        favIconKey = await (0, upload_service_1.uploadSiteImageToS3)(favIconFile, 'site-settings/favicon');
+        favIconKey = await (0, upload_service_1.uploadSiteImageToS3)(favIconFile, 'journals/site-settings/favicon');
     }
     if (iconImageFile) {
-        iconImageKey = await (0, upload_service_1.uploadSiteImageToS3)(iconImageFile, 'site-settings/icon');
+        iconImageKey = await (0, upload_service_1.uploadSiteImageToS3)(iconImageFile, 'journals/site-settings/icon');
     }
     if (!title && !subtitle && !phone && !email && !issn && !favIconKey && !iconImageKey) {
         throw new AppError_1.default('At least one field is required', 400);

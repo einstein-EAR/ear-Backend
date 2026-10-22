@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const editorialBoard_controller_1 = require("../controllers/editorialBoard.controller");
+const catchAsync_1 = require("../utils/catchAsync");
+const authMiddleware_1 = require("../middlewares/authMiddleware");
+const router = express_1.default.Router();
+router.get('/', (0, catchAsync_1.catchAsync)(editorialBoard_controller_1.getEditorialBoard));
+router.get('/categories', (0, catchAsync_1.catchAsync)(editorialBoard_controller_1.getEditorialBoardCategories));
+router.get('/categories/:categoryId', (0, catchAsync_1.catchAsync)(editorialBoard_controller_1.getEditorialBoardCategoryById));
+router.post('/categories', (0, catchAsync_1.catchAsync)(authMiddleware_1.protect), (0, catchAsync_1.catchAsync)((0, authMiddleware_1.authorize)('admin')), (0, catchAsync_1.catchAsync)(editorialBoard_controller_1.createEditorialBoardCategory));
+router.put('/categories/:categoryId', (0, catchAsync_1.catchAsync)(authMiddleware_1.protect), (0, catchAsync_1.catchAsync)((0, authMiddleware_1.authorize)('admin')), (0, catchAsync_1.catchAsync)(editorialBoard_controller_1.updateEditorialBoardCategory));
+router.delete('/categories/:categoryId', (0, catchAsync_1.catchAsync)(authMiddleware_1.protect), (0, catchAsync_1.catchAsync)((0, authMiddleware_1.authorize)('admin')), (0, catchAsync_1.catchAsync)(editorialBoard_controller_1.deleteEditorialBoardCategory));
+router.post('/categories/:categoryId/members', (0, catchAsync_1.catchAsync)(authMiddleware_1.protect), (0, catchAsync_1.catchAsync)((0, authMiddleware_1.authorize)('admin')), (0, catchAsync_1.catchAsync)(editorialBoard_controller_1.createEditorialBoardMember));
+router.put('/members/:memberId', (0, catchAsync_1.catchAsync)(authMiddleware_1.protect), (0, catchAsync_1.catchAsync)((0, authMiddleware_1.authorize)('admin')), (0, catchAsync_1.catchAsync)(editorialBoard_controller_1.updateEditorialBoardMember));
+router.delete('/members/:memberId', (0, catchAsync_1.catchAsync)(authMiddleware_1.protect), (0, catchAsync_1.catchAsync)((0, authMiddleware_1.authorize)('admin')), (0, catchAsync_1.catchAsync)(editorialBoard_controller_1.deleteEditorialBoardMember));
+exports.default = router;

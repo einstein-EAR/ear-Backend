@@ -49,6 +49,7 @@ model Journal {
   description  String
   serialNumber String         @map("serial_number")
   imageUrl     String         @map("image_url")
+  category     String         @default("journal")
   createdAt    DateTime       @default(now()) @map("created_at")
   updatedAt    DateTime       @updatedAt @map("updated_at")
   issues       JournalIssue[]
@@ -95,5 +96,44 @@ model SiteSettings {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("site_settings")
+}
+
+model EditorialBoardCategory {
+  id        String                 @id @default(uuid()) @map("_id") @db.Uuid
+  title     String
+  sortOrder Int                    @default(0) @map("sort_order")
+  createdAt DateTime               @default(now()) @map("created_at")
+  updatedAt DateTime               @updatedAt @map("updated_at")
+  members   EditorialBoardMember[]
+
+  @@map("editorial_board_categories")
+}
+
+model EditorialBoardMember {
+  id           String                 @id @default(uuid()) @map("_id") @db.Uuid
+  categoryId   String                 @map("category_id") @db.Uuid
+  name         String
+  designation  String                 @default("")
+  affiliation  String                 @default("")
+  email        String                 @default("")
+  sortOrder    Int                    @default(0) @map("sort_order")
+  createdAt    DateTime               @default(now()) @map("created_at")
+  updatedAt    DateTime               @updatedAt @map("updated_at")
+  category     EditorialBoardCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("editorial_board_members")
+}
+
+model LatestNews {
+  id          String   @id @default(uuid()) @map("_id") @db.Uuid
+  title       String
+  excerpt     String
+  imageUrl    String   @map("image_url")
+  publishedAt DateTime @default(now()) @map("published_at")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("latest_news")
 }
 
