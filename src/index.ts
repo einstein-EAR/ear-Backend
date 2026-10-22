@@ -10,6 +10,8 @@ import {
   journalRoute,
   issueRoute,
   siteSettingsRoute,
+  editorialBoardRoute,
+  latestNewsRoute,
 } from './routes';
 import { notFound, errorHandler } from './middlewares/errorHandler';
 
@@ -33,6 +35,8 @@ app.use('/paper-submissions', paperSubmissionRoute);
 app.use('/journals', journalRoute);
 app.use('/issues', issueRoute);
 app.use('/site-settings', siteSettingsRoute);
+app.use('/editorial-board', editorialBoardRoute);
+app.use('/latest-news', latestNewsRoute);
 
 app.use(notFound);
 app.use(errorHandler);

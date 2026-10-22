@@ -2,12 +2,19 @@ import pool from '../components/db';
 import AppError from '../utils/AppError';
 import { getPresignedUrl, uploadIssuePdfToS3 } from '../services/upload.service';
 
+export const JOURNAL_CATEGORIES = ['journal', 'conference'] as const;
+export type JournalCategory = (typeof JOURNAL_CATEGORIES)[number];
+
+export const isJournalCategory = (value: string): value is JournalCategory =>
+  (JOURNAL_CATEGORIES as readonly string[]).includes(value);
+
 type JournalRow = {
   _id: string;
   title: string;
   description: string;
   serial_number: string;
   image_url: string;
+  category: string;
   created_at: Date;
   updated_at: Date;
 };
@@ -63,17 +70,28 @@ const formatJournal = async (journal: JournalRow) => ({
   description: journal.description,
   serialNumber: journal.serial_number,
   imageUrl: await getPresignedUrl(journal.image_url),
+  category: journal.category || 'journal',
   created_at: journal.created_at,
   updated_at: journal.updated_at,
 });
 
-export const fetchJournals = async (journalFilter?: { id?: string }) => {
-  let journalQuery = 'SELECT * FROM journals';
+export const fetchJournals = async (journalFilter?: { id?: string; category?: JournalCategory }) => {
+  const conditions: string[] = [];
   const params: string[] = [];
 
   if (journalFilter?.id) {
-    journalQuery += ' WHERE _id = $1';
     params.push(journalFilter.id);
+    conditions.push(`_id = $${params.length}`);
+  }
+
+  if (journalFilter?.category) {
+    params.push(journalFilter.category);
+    conditions.push(`category = $${params.length}`);
+  }
+
+  let journalQuery = 'SELECT * FROM journals';
+  if (conditions.length > 0) {
+    journalQuery += ` WHERE ${conditions.join(' AND ')}`;
   }
 
   journalQuery += ' ORDER BY serial_number ASC';
@@ -127,6 +145,7 @@ export const fetchIssuesWithDetails = async (filter?: {
     description: '',
     serial_number: '',
     image_url: '',
+    category: 'journal',
     created_at: row.created_at,
     updated_at: row.updated_at,
   }));

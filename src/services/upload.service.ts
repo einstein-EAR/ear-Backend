@@ -89,6 +89,9 @@ export const uploadPaperToS3 = (file: Express.Multer.File) =>
 export const uploadJournalImageToS3 = (file: Express.Multer.File) =>
   uploadToS3(file, 'journals/images', IMAGE_MIME_TYPES, MAX_IMAGE_SIZE, 'Image');
 
+export const uploadLatestNewsImageToS3 = (file: Express.Multer.File) =>
+  uploadToS3(file, 'journals/latest-news/images', IMAGE_MIME_TYPES, MAX_IMAGE_SIZE, 'Image');
+
 export const uploadIssuePdfToS3 = (file: Express.Multer.File) =>
   uploadToS3(file, 'journals/issue-pdfs', PDF_MIME_TYPES, MAX_PDF_SIZE, 'PDF');
 

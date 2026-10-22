@@ -2,12 +2,32 @@ import { Request, Response } from 'express';
 import pool from '../components/db';
 import AppError from '../utils/AppError';
 import { uploadJournalImageToS3 } from '../services/upload.service';
-import { fetchJournals } from '../services/journal.service';
+import {
+  fetchJournals,
+  isJournalCategory,
+  JournalCategory,
+} from '../services/journal.service';
 
 const getParam = (value: string | string[]): string =>
   Array.isArray(value) ? value[0] : value;
 
-const validateJournalFields = (body: Record<string, unknown>) => {
+const parseCategory = (value: unknown, fallback: JournalCategory = 'journal'): JournalCategory => {
+  if (value === undefined || value === null || value === '') {
+    return fallback;
+  }
+
+  const category = String(value).trim().toLowerCase();
+  if (!isJournalCategory(category)) {
+    throw new AppError('category must be journal or conference', 400);
+  }
+
+  return category;
+};
+
+const validateJournalFields = (
+  body: Record<string, unknown>,
+  fallbackCategory: JournalCategory = 'journal'
+) => {
   const title = typeof body.title === 'string' ? body.title.trim() : '';
   const description = typeof body.description === 'string' ? body.description.trim() : '';
   const serialNumber =
@@ -17,11 +37,19 @@ const validateJournalFields = (body: Record<string, unknown>) => {
     throw new AppError('title, description and serialNumber are required', 400);
   }
 
-  return { title, description, serialNumber };
+  return {
+    title,
+    description,
+    serialNumber,
+    category: parseCategory(body.category, fallbackCategory),
+  };
 };
 
-export const getAllJournals = async (_req: Request, res: Response) => {
-  const journals = await fetchJournals();
+export const getAllJournals = async (req: Request, res: Response) => {
+  const rawCategory = typeof req.query.category === 'string' ? req.query.category : undefined;
+  const journals = await fetchJournals(
+    rawCategory ? { category: parseCategory(rawCategory) } : undefined
+  );
   res.json(journals);
 };
 
@@ -44,10 +72,10 @@ export const createJournal = async (req: Request, res: Response) => {
   const imageKey = await uploadJournalImageToS3(req.file);
 
   const result = await pool.query(
-    `INSERT INTO journals (title, description, serial_number, image_url)
-     VALUES ($1, $2, $3, $4)
+    `INSERT INTO journals (title, description, serial_number, image_url, category)
+     VALUES ($1, $2, $3, $4, $5)
      RETURNING *`,
-    [data.title, data.description, data.serialNumber, imageKey]
+    [data.title, data.description, data.serialNumber, imageKey, data.category]
   );
 
   const journals = await fetchJournals({ id: result.rows[0]._id });
@@ -62,7 +90,10 @@ export const updateJournal = async (req: Request, res: Response) => {
     throw new AppError('Journal not found', 404);
   }
 
-  const data = validateJournalFields(req.body);
+  const existingCategory = isJournalCategory(existing.rows[0].category)
+    ? existing.rows[0].category
+    : 'journal';
+  const data = validateJournalFields(req.body, existingCategory);
 
   let imageKey = existing.rows[0].image_url;
   if (req.file) {
@@ -72,9 +103,9 @@ export const updateJournal = async (req: Request, res: Response) => {
   await pool.query(
     `UPDATE journals
      SET title = $1, description = $2, serial_number = $3,
-         image_url = $4, updated_at = NOW()
-     WHERE _id = $5`,
-    [data.title, data.description, data.serialNumber, imageKey, journalId]
+         image_url = $4, category = $5, updated_at = NOW()
+     WHERE _id = $6`,
+    [data.title, data.description, data.serialNumber, imageKey, data.category, journalId]
   );
 
   const journals = await fetchJournals({ id: journalId });

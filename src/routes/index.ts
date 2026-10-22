@@ -5,3 +5,5 @@ export { default as paperSubmissionRoute } from './paperSubmissionRoutes';
 export { default as journalRoute } from './journalRoutes';
 export { default as issueRoute } from './issueRoutes';
 export { default as siteSettingsRoute } from './siteSettingsRoutes';
+export { default as editorialBoardRoute } from './editorialBoardRoutes';
+export { default as latestNewsRoute } from './latestNewsRoutes';
